@@ -8,9 +8,15 @@ import kotlinx.coroutines.launch
 
 class RecipeViewModel : ViewModel() {
 
+    private var ingredients: List<String> = emptyList()
+    private var description: String? = null
 
 
     fun setIngredients(ingredients: List<String>, description: String) {
+        if (this.ingredients == ingredients && this.description == description ) {
+            return
+        }
+
         println("$ingredients -> $description")
         viewModelScope.launch {
             val result = RecipeService.findRecipe(ingredients, description)

@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import io.aoriani.recipe.ui.screens.landing.Landing
 import io.aoriani.recipe.ui.screens.landing.LandingViewModel
+import io.aoriani.recipe.ui.screens.recipe.Recipe
 import io.aoriani.recipe.ui.screens.recipe.RecipeViewModel
 
 @Composable
@@ -31,6 +32,9 @@ fun App() {
             val (ingredients, desc) = navBackStackEntry.toRoute<Routes.Recipe>()
             Log.d("ORIANI","composable<Routes.Recipe>" )
             recipeViewModel.setIngredients(ingredients, desc)
+            Recipe(onNavigateUp = {
+                navController.navigateUp()
+            })
 
         }
     }
