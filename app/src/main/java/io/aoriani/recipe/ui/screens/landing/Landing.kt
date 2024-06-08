@@ -27,6 +27,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +40,13 @@ fun Landing(
     landingUiState: LandingUiState,
     onIngredientsFound: (ingredients: List<String>, description: String) -> Unit = { _, _ -> }
 ) {
+    LaunchedEffect(landingUiState) {
+        if (landingUiState is LandingUiState.IngredientsFound) {
+            landingUiState.consume()
+            onIngredientsFound(landingUiState.ingredients, landingUiState.description)
+        }
+    }
+
     Scaffold(topBar = {
         TopAppBar(title = {
             Text("Recipe")
@@ -58,10 +66,7 @@ fun Landing(
                 is LandingUiState.Init -> LandingReadyState(landingUiState)
                 is LandingUiState.Resolving -> LandingPageResolving()
                 is LandingUiState.NoIngredients -> LandingPageNoIngredients(landingUiState)
-                is LandingUiState.IngredientsFound -> {
-                    onIngredientsFound(landingUiState.ingredients, landingUiState.description)
-                    landingUiState.consume()
-                }
+                else -> Unit
             }
 
         }

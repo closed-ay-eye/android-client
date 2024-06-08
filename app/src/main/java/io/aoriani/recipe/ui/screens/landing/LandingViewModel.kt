@@ -78,7 +78,11 @@ class LandingViewModel(application: Application) : AndroidViewModel(application)
             if (ingredients.isEmpty()) {
                 _uistate.value = LandingUiState.NoIngredients(onDismiss = ::reset)
             } else {
-                _uistate.value = LandingUiState.IngredientsFound(ingredients, description )
+                _uistate.value = LandingUiState.IngredientsFound(
+                    ingredients,
+                    description = description.trim().takeIf { it.isNotBlank() } ?: "Pick Any",
+                    consume = ::reset
+                )
             }
         }
     }
@@ -123,11 +127,11 @@ class LandingViewModel(application: Application) : AndroidViewModel(application)
                 val jsonObject = JSONObject(jsonString)
                 val ingredients = jsonObject.getJSONArray("ingredients")
                 val list = arrayListOf<String>()
-                for ( i in 0..<ingredients.length()) {
+                for (i in 0..<ingredients.length()) {
                     list += ingredients.get(i) as String
                 }
                 list
-            } else{
+            } else {
                 emptyList()
             }
         } catch (t: Throwable) {
@@ -152,12 +156,16 @@ sealed interface LandingUiState {
 
 
     @Immutable
-    data object Resolving: LandingUiState
+    data object Resolving : LandingUiState
 
     @Immutable
-    data class NoIngredients(val onDismiss: () -> Unit = {}): LandingUiState
+    data class NoIngredients(val onDismiss: () -> Unit = {}) : LandingUiState
 
     @Immutable
-    data class IngredientsFound(val ingredients: List<String>, val description: String, val consume: ()->Unit = {}): LandingUiState
+    data class IngredientsFound(
+        val ingredients: List<String>,
+        val description: String,
+        val consume: () -> Unit = {}
+    ) : LandingUiState
 
 }
