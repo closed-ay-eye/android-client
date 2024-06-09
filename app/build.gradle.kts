@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.okhttp3.logging.interceptor)
     implementation(libs.coil.compose)
     implementation(libs.converter.kotlinx.serialization)
+    implementation("com.aallam.openai:openai-client:3.7.2")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
