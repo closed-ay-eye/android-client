@@ -28,6 +28,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import io.aoriani.recipe.ui.theme.RecipeTheme
 
 
@@ -64,14 +66,24 @@ fun Recipe(uiState: RecipeUiState, onNavigateUp: () -> Unit = {}) {
 @Composable
 fun ShowRecipe(uiState: RecipeUiState.Found, modifier: Modifier = Modifier) {
     val scrollableState = rememberScrollState()
-    Column(modifier = modifier
-        .verticalScroll(scrollableState)
-        .fillMaxSize()
-        .padding(horizontal = 24.dp)
-        ) {
-        Text(uiState.name, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.fillMaxWidth())
+    Column(
+        modifier = modifier
+            .verticalScroll(scrollableState)
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
+    ) {
+        Text(
+            uiState.name,
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(modifier = Modifier.height(16.dp))
-        Text(uiState.description, style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic, modifier = Modifier.fillMaxWidth())
+        Text(
+            uiState.description,
+            style = MaterialTheme.typography.bodyMedium,
+            fontStyle = FontStyle.Italic,
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
         val servingText = buildAnnotatedString {
@@ -103,6 +115,18 @@ fun ShowRecipe(uiState: RecipeUiState.Found, modifier: Modifier = Modifier) {
         )
 
         Spacer(modifier = Modifier.height(24.dp))
+
+
+        if (uiState.image != null) {
+            AsyncImage(
+                model = uiState.image,
+                contentDescription = uiState.name,
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
         Card {
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(
@@ -137,8 +161,6 @@ fun ShowRecipe(uiState: RecipeUiState.Found, modifier: Modifier = Modifier) {
                 }
             }
         }
-
-
 
 
     }
