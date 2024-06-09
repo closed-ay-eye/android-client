@@ -1,8 +1,7 @@
 package io.aoriani.recipe.ui.screens.recipe
 
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,14 +9,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,7 +45,11 @@ import io.aoriani.recipe.ui.theme.RecipeTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Recipe(uiState: RecipeUiState, onNavigateUp: () -> Unit = {}) {
+fun Recipe(
+    uiState: RecipeUiState,
+    onNavigateUp: () -> Unit = {},
+    navigateToAssistant: (String, List<String>, List<String>) -> Unit
+) {
     Scaffold(topBar = {
         TopAppBar(title = { Text("Recipe") }, navigationIcon = {
             IconButton(onClick = onNavigateUp) {
@@ -56,113 +62,139 @@ fun Recipe(uiState: RecipeUiState, onNavigateUp: () -> Unit = {}) {
         when (uiState) {
             RecipeUiState.Finding -> RecipeFinding(modifier = Modifier.padding(innerPadding))
             is RecipeUiState.Error -> RecipeError(uiState, onNavigateUp)
-            is RecipeUiState.Found -> ShowRecipe(uiState, Modifier.padding(innerPadding))
+            is RecipeUiState.Found -> ShowRecipe(
+                uiState,
+                navigateToAssistant,
+                Modifier.padding(innerPadding)
+            )
         }
 
     }
 }
 
-
 @Composable
-fun ShowRecipe(uiState: RecipeUiState.Found, modifier: Modifier = Modifier) {
-    val scrollableState = rememberScrollState()
-    Column(
-        modifier = modifier
-            .verticalScroll(scrollableState)
-            .fillMaxSize()
-            .padding(horizontal = 24.dp)
-    ) {
-        Text(
-            uiState.name,
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            uiState.description,
-            style = MaterialTheme.typography.bodyMedium,
-            fontStyle = FontStyle.Italic,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+fun ShowRecipe(
+    uiState: RecipeUiState.Found,
+    navigateToAssistant: (String, List<String>, List<String>) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        val scrollableState = rememberScrollState()
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollableState)
+                .fillMaxSize()
+                .padding(horizontal = 24.dp)
+        ) {
+            Text(
+                uiState.name,
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                uiState.description,
+                style = MaterialTheme.typography.bodyMedium,
+                fontStyle = FontStyle.Italic,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
-        val servingText = buildAnnotatedString {
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("Servings")
+            val servingText = buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                    append("Servings")
+                }
+                append(" ")
+                append(uiState.servings)
             }
-            append(" ")
-            append(uiState.servings)
-        }
 
-        Text(
-            servingText,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.fillMaxWidth()
-        )
+            Text(
+                servingText,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        val servingSizeText = buildAnnotatedString {
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("Servings Size")
+            val servingSizeText = buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                    append("Servings Size")
+                }
+                append(" ")
+                append(uiState.servingsSize)
             }
-            append(" ")
-            append(uiState.servingsSize)
-        }
 
-        Text(
-            servingSizeText,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-
-        if (uiState.image != null) {
-            AsyncImage(
-                model = uiState.image,
-                contentDescription = uiState.name,
-                contentScale = ContentScale.FillWidth,
+            Text(
+                servingSizeText,
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(24.dp))
-        }
-        Card {
-            Column(modifier = Modifier.padding(8.dp)) {
-                Text(
-                    "Ingredients",
-                    style = MaterialTheme.typography.titleMedium,
+
+
+            if (uiState.image != null) {
+                AsyncImage(
+                    model = uiState.image,
+                    contentDescription = uiState.name,
+                    contentScale = ContentScale.FillWidth,
                     modifier = Modifier.fillMaxWidth()
                 )
-                uiState.ingredients.forEach { ingredient ->
+
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+            Card {
+                Column(modifier = Modifier.padding(8.dp)) {
                     Text(
-                        "◉ $ingredient",
-                        style = MaterialTheme.typography.bodyMedium,
+                        "Ingredients",
+                        style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    uiState.ingredients.forEach { ingredient ->
+                        Text(
+                            "◉ $ingredient",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+            Card {
+                Column(modifier = Modifier.padding(8.dp)) {
+                    Text(
+                        "Steps",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    uiState.steps.forEach { step ->
+                        Text(
+                            "◉ $step",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(48.dp))
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-        Card {
-            Column(modifier = Modifier.padding(8.dp)) {
-                Text(
-                    "Steps",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.fillMaxWidth()
+        ExtendedFloatingActionButton(
+            onClick = {
+                navigateToAssistant(
+                    uiState.ingredientsScripts,
+                    uiState.stepsScript,
+                    uiState.step_illustrations
                 )
-                uiState.steps.forEach { step ->
-                    Text(
-                        "◉ $step",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp)
+        ) {
+            Icon(Icons.Default.Face, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Assistant")
         }
-
-
     }
 }
 
@@ -205,8 +237,12 @@ fun RecipePreview() {
                 steps = listOf("Make rice", "cut the salmon", "Make a roll"),
                 servings = "4",
                 servingsSize = "450g",
-                image = null
-            )
+                image = null,
+                ingredientsScripts = "",
+                stepsScript = emptyList(),
+                step_illustrations = emptyList()
+            ),
+            navigateToAssistant = {_,_,_ ->}
         )
     }
 }

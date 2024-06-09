@@ -35,7 +35,7 @@ class RecipeViewModel : ViewModel() {
                         else -> "Unknown Error"
                     }
                     _uiState.value = RecipeUiState.Error(message)
-                } else if(result.recipe != null) {
+                } else if (result.recipe != null) {
                     _uiState.value = RecipeUiState.Found(
                         name = result.recipe.name,
                         description = result.recipe.description,
@@ -43,7 +43,10 @@ class RecipeViewModel : ViewModel() {
                         steps = result.recipe.steps,
                         servingsSize = result.recipe.serving_size,
                         servings = result.recipe.servings,
-                        image = result.recipe.image
+                        image = result.recipe.image,
+                        ingredientsScripts = result.recipe.script.ingredients,
+                        stepsScript = result.recipe.script.steps,
+                        step_illustrations = result.recipe.script.steps_illustration
                     )
                 } else {
                     _uiState.value = RecipeUiState.Error("Server Implementation error")
@@ -70,9 +73,11 @@ sealed interface RecipeUiState {
         val steps: List<String>,
         val servings: String,
         val servingsSize: String,
-        val image: String?
+        val image: String?,
+        val ingredientsScripts: String,
+        val stepsScript: List<String>,
+        val step_illustrations: List<String>
     ) : RecipeUiState
-
 
     @Immutable
     data class Error(val message: String) : RecipeUiState
