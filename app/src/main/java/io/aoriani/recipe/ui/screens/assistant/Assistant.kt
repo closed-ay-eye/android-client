@@ -21,12 +21,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.onEach
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,24 +72,34 @@ fun AssistantLoading(modifier: Modifier = Modifier) {
 
 @Composable
 fun AssistantReady(uiState: AssistantUiState.Loaded) {
-    val pagerState = rememberPagerState(pageCount = {uiState.stepsUrls.size + 1 })
-    HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+    val pagerState = rememberPagerState(pageCount = { uiState.stepsUrls.size + 1 })
+    HorizontalPager(
+        state = pagerState,
+        modifier = Modifier.fillMaxSize(),
+        userScrollEnabled = false
+    ) { page ->
         //Page Zero is for the ingredients instructions
         //Steps start after
         if (page == 0) {
             Text("Ingredients")
         } else {
-            AsyncImage(model = uiState.stepsUrls[page - 1], contentDescription = null, contentScale = ContentScale.FillWidth)
+            AsyncImage(
+                model = uiState.stepsUrls[page - 1],
+                contentDescription = null,
+                contentScale = ContentScale.FillWidth
+            )
         }
     }
-//    val scrollableState = rememberScrollState()
-//    Column(
-//        modifier = Modifier
-//            .verticalScroll(scrollableState)
-//            .fillMaxSize()
-//    ) {
-//        uiState.stepsUrls.forEach {
-//            AsyncImage(model = it, contentDescription = null, contentScale = ContentScale.FillWidth)
-//        }
-//    }
+
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }
+            .collect { currentPage ->
+                delay(3000)
+                if (currentPage < pagerState.pageCount -1) {
+                    pagerState.scrollToPage(currentPage + 1)
+                }
+            }
+    }
+
 }
