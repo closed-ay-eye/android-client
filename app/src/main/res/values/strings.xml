@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Recipe</string>
+    <string name="ic_play_audio_desc">Play recipe step</string>
 </resources>
