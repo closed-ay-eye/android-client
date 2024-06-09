@@ -22,7 +22,6 @@ fun App() {
             val landingViewModel: LandingViewModel = viewModel()
             val uitState by landingViewModel.uiState
             Landing(uitState, onIngredientsFound = { ingredients, desc ->
-                Log.d("ORIANI","onIngredientsFound" )
                 navController.navigate(Routes.Recipe(ingredients, desc))
             })
         }
@@ -30,9 +29,9 @@ fun App() {
         composable<Routes.Recipe> { navBackStackEntry ->
             val recipeViewModel: RecipeViewModel = viewModel()
             val (ingredients, desc) = navBackStackEntry.toRoute<Routes.Recipe>()
-            Log.d("ORIANI","composable<Routes.Recipe>" )
             recipeViewModel.setIngredients(ingredients, desc)
-            Recipe(onNavigateUp = {
+            val uiState by recipeViewModel.uiState
+            Recipe(uiState, onNavigateUp = {
                 navController.navigateUp()
             })
 
