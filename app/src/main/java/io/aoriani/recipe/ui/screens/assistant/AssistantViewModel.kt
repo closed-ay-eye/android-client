@@ -13,11 +13,12 @@ import com.aallam.openai.client.OpenAI
 import io.aoriani.recipe.BuildConfig
 import io.aoriani.recipe.ui.navigation.Routes
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.seconds
 
-class AssistantViewModel: ViewModel() {
+class AssistantViewModel : ViewModel() {
     private val _uiState = mutableStateOf<AssistantUiState>(AssistantUiState.Loading)
     val uiState: State<AssistantUiState> = _uiState
     private var assistantArgs: Routes.Assistant? = null
@@ -35,7 +36,8 @@ class AssistantViewModel: ViewModel() {
         viewModelScope.launch {
             val stepsIllustrations = withContext(Dispatchers.IO) {
                 checkNotNull(this@AssistantViewModel.assistantArgs)
-                this@AssistantViewModel.assistantArgs!!.step_illustrations.map { genImage(it) }
+                this@AssistantViewModel.assistantArgs!!.step_illustrations.map { async { genImage(it) } }
+                    .map { it.await() }
             }
             _uiState.value = AssistantUiState.Loaded(stepsIllustrations)
         }
@@ -45,12 +47,14 @@ class AssistantViewModel: ViewModel() {
 
     private suspend fun genImage(description: String): String? {
         return try {
-            val urls = openAi.imageURL(creation = ImageCreation(
-                prompt = description,
-                model = ModelId("dall-e-3"),
-                n = 1,
-                size = ImageSize.is1024x1024
-            ))
+            val urls = openAi.imageURL(
+                creation = ImageCreation(
+                    prompt = description,
+                    model = ModelId("dall-e-3"),
+                    n = 1,
+                    size = ImageSize.is1024x1024
+                )
+            )
             urls.firstOrNull()?.url
         } catch (t: Throwable) {
             null
@@ -62,8 +66,8 @@ class AssistantViewModel: ViewModel() {
 @Immutable
 sealed interface AssistantUiState {
     @Immutable
-    data object Loading: AssistantUiState
+    data object Loading : AssistantUiState
 
     @Immutable
-    data class Loaded(val stepsUrls: List<String?>): AssistantUiState
+    data class Loaded(val stepsUrls: List<String?>) : AssistantUiState
 }
