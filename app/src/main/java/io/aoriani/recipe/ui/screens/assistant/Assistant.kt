@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -66,14 +68,24 @@ fun AssistantLoading(modifier: Modifier = Modifier) {
 
 @Composable
 fun AssistantReady(uiState: AssistantUiState.Loaded) {
-    val scrollableState = rememberScrollState()
-    Column(
-        modifier = Modifier
-            .verticalScroll(scrollableState)
-            .fillMaxSize()
-    ) {
-        uiState.stepsUrls.forEach {
-            AsyncImage(model = it, contentDescription = null, contentScale = ContentScale.FillWidth)
+    val pagerState = rememberPagerState(pageCount = {uiState.stepsUrls.size + 1 })
+    HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+        //Page Zero is for the ingredients instructions
+        //Steps start after
+        if (page == 0) {
+            Text("Ingredients")
+        } else {
+            AsyncImage(model = uiState.stepsUrls[page - 1], contentDescription = null, contentScale = ContentScale.FillWidth)
         }
     }
+//    val scrollableState = rememberScrollState()
+//    Column(
+//        modifier = Modifier
+//            .verticalScroll(scrollableState)
+//            .fillMaxSize()
+//    ) {
+//        uiState.stepsUrls.forEach {
+//            AsyncImage(model = it, contentDescription = null, contentScale = ContentScale.FillWidth)
+//        }
+//    }
 }
