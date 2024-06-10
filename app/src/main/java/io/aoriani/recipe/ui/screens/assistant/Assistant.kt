@@ -3,14 +3,17 @@ package io.aoriani.recipe.ui.screens.assistant
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -76,35 +79,33 @@ fun AssistantReady(uiState: AssistantUiState.Loaded) {
         //Page Zero is for the ingredients instructions
         //Steps start after
         if (page == 0) {
-            Text("Ingredients")
+           Column(horizontalAlignment = Alignment.CenterHorizontally,) {
+               Text("Ingredients", textAlign = TextAlign.Center, style = MaterialTheme.typography.displayLarge, modifier = Modifier.fillMaxWidth())
+               Spacer(Modifier.height(16.dp))
+               Button(
+                   onClick = { uiState.onClickAudio(uiState.ingredients) },
+                   modifier = Modifier.padding(8.dp),
+               ) {
+                   Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+                   Text("Play")
+               }
+           }
         } else {
             Column(
                 modifier = Modifier.padding(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 AsyncImage(model = uiState.stepsUrls[page - 1], contentDescription = null, contentScale = ContentScale.FillWidth)
+                Spacer(Modifier.height(16.dp))
 
                 Button(
                     onClick = { uiState.onClickAudio(uiState.steps[page - 1]) },
                     modifier = Modifier.padding(8.dp),
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.ic_play_audio),
-                        contentDescription = stringResource(R.string.ic_play_audio_desc),
-                        modifier = Modifier.size(32.dp),
-                    )
+                    Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+                    Text("Pay")
                 }
             }
         }
     }
-//    val scrollableState = rememberScrollState()
-//    Column(
-//        modifier = Modifier
-//            .verticalScroll(scrollableState)
-//            .fillMaxSize()
-//    ) {
-//        uiState.stepsUrls.forEach {
-//            AsyncImage(model = it, contentDescription = null, contentScale = ContentScale.FillWidth)
-//        }
-//    }
 }

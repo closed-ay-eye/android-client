@@ -44,6 +44,7 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
                     .map { it.await() }
             }
             _uiState.value = AssistantUiState.Loaded(
+                ingredients = this@AssistantViewModel.assistantArgs!!.ingredients,
                 steps = this@AssistantViewModel.assistantArgs!!.steps,
                 stepsUrls = stepsIllustrations,
                 onClickAudio = ::playAudioStep,
@@ -89,6 +90,7 @@ sealed interface AssistantUiState {
 
     @Immutable
     data class Loaded(
+        val ingredients: String,
         val steps: List<String>,
         val stepsUrls: List<String?>,
         val onClickAudio: (String) -> Unit,
