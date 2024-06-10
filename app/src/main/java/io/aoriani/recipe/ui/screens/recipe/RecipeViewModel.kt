@@ -1,15 +1,16 @@
 package io.aoriani.recipe.ui.screens.recipe
 
+import android.app.Application
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.aoriani.recipe.ui.screens.recipe.network.RecipeRequestResult
 import io.aoriani.recipe.ui.screens.recipe.network.RecipeService
 import kotlinx.coroutines.launch
 
-class RecipeViewModel : ViewModel() {
+class RecipeViewModel(application: Application) : AndroidViewModel(application) {
     private var ingredients: List<String> = emptyList()
     private var description: String? = null
     private var result: RecipeRequestResult? = null
@@ -54,7 +55,6 @@ class RecipeViewModel : ViewModel() {
             } catch (t: Throwable) {
                 _uiState.value = RecipeUiState.Error("Unknown Error")
             }
-
         }
     }
 }

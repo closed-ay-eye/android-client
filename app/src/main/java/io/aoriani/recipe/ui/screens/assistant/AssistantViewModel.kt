@@ -1,9 +1,10 @@
 package io.aoriani.recipe.ui.screens.assistant
 
+import android.app.Application
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.aallam.openai.api.http.Timeout
 import com.aallam.openai.api.image.ImageCreation
@@ -11,6 +12,8 @@ import com.aallam.openai.api.image.ImageSize
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
 import io.aoriani.recipe.BuildConfig
+import io.aoriani.recipe.domain.OpenAiTextToSpeech
+import io.aoriani.recipe.domain.TtsUseCase
 import io.aoriani.recipe.ui.navigation.Routes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -18,7 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.seconds
 
-class AssistantViewModel : ViewModel() {
+class AssistantViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = mutableStateOf<AssistantUiState>(AssistantUiState.Loading)
     val uiState: State<AssistantUiState> = _uiState
     private var assistantArgs: Routes.Assistant? = null
@@ -26,7 +29,8 @@ class AssistantViewModel : ViewModel() {
         token = BuildConfig.openAiKey,
         timeout = Timeout(socket = 60.seconds),
     )
-
+    private val ttsUseCase by lazy { TtsUseCase() }
+    private val openAiTextToSpeech by lazy { OpenAiTextToSpeech(openAi) }
 
     fun setScript(assistantArgs: Routes.Assistant) {
         if (assistantArgs == this.assistantArgs) return
@@ -39,7 +43,11 @@ class AssistantViewModel : ViewModel() {
                 this@AssistantViewModel.assistantArgs!!.step_illustrations.map { async { genImage(it) } }
                     .map { it.await() }
             }
-            _uiState.value = AssistantUiState.Loaded(stepsIllustrations)
+            _uiState.value = AssistantUiState.Loaded(
+                steps = this@AssistantViewModel.assistantArgs!!.steps,
+                stepsUrls = stepsIllustrations,
+                onClickAudio = ::playAudioStep,
+            )
         }
 
     }
@@ -60,6 +68,17 @@ class AssistantViewModel : ViewModel() {
             null
         }
     }
+
+    private fun playAudioStep(text: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val rawAudio = openAiTextToSpeech.synthesize(text)
+
+            ttsUseCase.playAudio(
+                rawAudio = rawAudio,
+                context = getApplication<Application>().applicationContext,
+            )
+        }
+    }
 }
 
 
@@ -69,5 +88,9 @@ sealed interface AssistantUiState {
     data object Loading : AssistantUiState
 
     @Immutable
-    data class Loaded(val stepsUrls: List<String?>) : AssistantUiState
+    data class Loaded(
+        val steps: List<String>,
+        val stepsUrls: List<String?>,
+        val onClickAudio: (String) -> Unit,
+    ) : AssistantUiState
 }

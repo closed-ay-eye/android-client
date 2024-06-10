@@ -1,5 +1,6 @@
 package io.aoriani.recipe.ui.screens.assistant
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,10 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,9 +24,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import io.aoriani.recipe.R
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,7 +78,23 @@ fun AssistantReady(uiState: AssistantUiState.Loaded) {
         if (page == 0) {
             Text("Ingredients")
         } else {
-            AsyncImage(model = uiState.stepsUrls[page - 1], contentDescription = null, contentScale = ContentScale.FillWidth)
+            Column(
+                modifier = Modifier.padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                AsyncImage(model = uiState.stepsUrls[page - 1], contentDescription = null, contentScale = ContentScale.FillWidth)
+
+                Button(
+                    onClick = { uiState.onClickAudio(uiState.steps[page - 1]) },
+                    modifier = Modifier.padding(8.dp),
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_play_audio),
+                        contentDescription = stringResource(R.string.ic_play_audio_desc),
+                        modifier = Modifier.size(32.dp),
+                    )
+                }
+            }
         }
     }
 //    val scrollableState = rememberScrollState()
